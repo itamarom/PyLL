@@ -1,5 +1,6 @@
 import re
 import argparse
+from program import Program
 
 PUBLIC_VAR_DEFINITION_PATTERN = r"@(?P<name>[\w\.]+)\s*=\s*(?P<props>[\w ]*)\[(?P<size>\d+)\s*x\s*(?P<unit>\w+)\]\s*(?P<value>.+),\s*align\s*(?P<alignment>\d+)$"
 FUNC_DEFINITION_PATTERN = "define\s+(?P<return_type>\w+)\s+@(?P<name>\w+)\(\)\s*(?P<attribs>#\d+)?\s*\{$"
@@ -7,7 +8,7 @@ ATTRIBS_DEFINITION_PATTERN = "attributes\s(?P<name>#\d+)\s*=\s*\{\s*(?P<content>
 
 
 unknown = {'target': {}}
-globals = {}
+globs = {}
 funcs = {}
 attribs = {}
 
@@ -41,7 +42,7 @@ def main():
 
             values = result.groupdict()
 
-            globals[values['name']] = parse_llvm_str(values['value'])
+            globs[values['name']] = parse_llvm_str(values['value'])
 
         elif line.startswith('define'):
             # functions
@@ -73,12 +74,15 @@ def main():
 
     print('unkonwn:')
     print(unknown)
-    print('globals:')
-    print(globals)
+    print('globs:')
+    print(globs)
     print('funcs')
     print(funcs)
     print('attribs:')
     print(attribs)
+    
+    prog = Program(unknown, globs, funcs, attr)
+    prog.run()
 
 
 def parse_func(src):
