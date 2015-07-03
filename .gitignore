@@ -58,3 +58,5 @@ target/
 
 # vim's stuff:
 *.swp
+.ropeproject/* # is it even related to vim's?
+.ropeproject

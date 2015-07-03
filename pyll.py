@@ -81,8 +81,8 @@ def main():
     print(funcs)
     print('attribs:')
     print(attribs)
-    
-    prog = Program(unknown, globs, funcs, attr)
+
+    prog = Program(unknown, globs, funcs, attribs)
     prog.run()
 
 
@@ -95,6 +95,7 @@ def parse_func(src):
         line = src.readline()
 
     return content
+
 
 def parse_llvm_str(text):
     assert text.startswith('c"') and text.endswith('"')
