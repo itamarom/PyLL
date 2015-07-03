@@ -18,3 +18,9 @@ int a(){
 int b(int x){
     return x;
 }
+
+int c(int x, int y){
+    x++;
+    y+= x;
+    return y;
+}
