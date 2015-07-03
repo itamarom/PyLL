@@ -3,7 +3,7 @@ import argparse
 from program import Program
 
 PUBLIC_VAR_DEFINITION_PATTERN = r"@(?P<name>[\w\.]+)\s*=\s*(?P<props>[\w ]*)\[(?P<size>\d+)\s*x\s*(?P<unit>\w+)\]\s*(?P<value>.+),\s*align\s*(?P<alignment>\d+)$"
-FUNC_DEFINITION_PATTERN = r"define\s+(?P<return_type>\w+)\s+@(?P<name>\w+)\((?P<params>[\w\d\s%]+)?\)\s*(?P<attribs>#\d+)?\s*\{$"
+FUNC_DEFINITION_PATTERN = r"define\s+(?P<return_type>\w+)\s+@(?P<name>\w+)\((?P<params>[\w\d\s%,]+)?\)\s*(?P<attribs>#\d+)?\s*\{$"
 ATTRIBS_DEFINITION_PATTERN = r"attributes\s(?P<name>#\d+)\s*=\s*\{\s*(?P<content>[\w\s\"\-=]+)\}\s*$"
 
 
@@ -48,6 +48,8 @@ def main():
         elif line.startswith('define'):
             # functions
             result = func_definition.match(line)
+            print line
+            print func_definition
             if result is not None:
                 values = result.groupdict()
                 funcs[values['name']] = {'return_type': values['return_type'],
