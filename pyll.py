@@ -3,8 +3,8 @@ import argparse
 from program import Program
 
 PUBLIC_VAR_DEFINITION_PATTERN = r"@(?P<name>[\w\.]+)\s*=\s*(?P<props>[\w ]*)\[(?P<size>\d+)\s*x\s*(?P<unit>\w+)\]\s*(?P<value>.+),\s*align\s*(?P<alignment>\d+)$"
-FUNC_DEFINITION_PATTERN = "define\s+(?P<return_type>\w+)\s+@(?P<name>\w+)\(\)\s*(?P<attribs>#\d+)?\s*\{$"
-ATTRIBS_DEFINITION_PATTERN = "attributes\s(?P<name>#\d+)\s*=\s*\{\s*(?P<content>[\w\s\"\-=]+)\}\s*$"
+FUNC_DEFINITION_PATTERN = r"define\s+(?P<return_type>\w+)\s+@(?P<name>\w+)\((?P<params>[\w\d\s%]+)?\)\s*(?P<attribs>#\d+)?\s*\{$"
+ATTRIBS_DEFINITION_PATTERN = r"attributes\s(?P<name>#\d+)\s*=\s*\{\s*(?P<content>[\w\s\"\-=]+)\}\s*$"
 
 
 unknown = {'target': {}}
@@ -27,9 +27,10 @@ def main():
     func_definition = re.compile(FUNC_DEFINITION_PATTERN)
     attribs_definition = re.compile(ATTRIBS_DEFINITION_PATTERN)
 
-    line = src.readline().strip()
-    print(src)
+    line = src.readline()
     while line:
+        line = line.strip()
+
         if line.startswith(';') or len(line) == 0:
             line = src.readline()
             continue
@@ -48,7 +49,7 @@ def main():
             # functions
             result = func_definition.match(line)
             if result is not None:
-                values = result.grouptdict()
+                values = result.groupdict()
                 funcs[values['name']] = {'return_type': values['return_type'],
                                          'attribs': values['attribs'],
                                          'content': parse_func(src)}
@@ -70,7 +71,7 @@ def main():
         else:
             print('ignoring: ' + line)
 
-        line = src.readline().strip()
+        line = src.readline()
 
     print('unkonwn:')
     print(unknown)
