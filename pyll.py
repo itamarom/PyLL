@@ -91,7 +91,6 @@ def parse_func(src):
 
     return content
 
-
 def parse_llvm_str(text):
     assert text.startswith('c"') and text.endswith('"')
     text = text[2:-1]
@@ -100,15 +99,16 @@ def parse_llvm_str(text):
 
     nums = re.findall(p, text)
 
-    for n in nums:
-        text = text.replace(n, n[0] + chr(int(n[-2:], 16)))
+    while nums:
+        for n in nums:
+            text = text.replace(n, n[0] + chr(int(n[-2:], 16)))
+        nums = re.findall(p, text)
 
     if len(text) >= 4 and text[0] == '\\' and text[1] != '\\':
         print 'a'
         text = chr(int(text[1:3], 16)) + text[3:]
 
     return text
-
 
 if __name__ == "__main__":
     main()
