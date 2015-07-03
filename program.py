@@ -1,10 +1,10 @@
 class Program(object):
     
-    def __init__(self, unknown, globs, funcs, attr):
+    def __init__(self, unknown, globs, funcs, attribs):
         self.unknown = unknown
         self.globs = globs
         self.funcs = funcs
-        self.attr = attr
+        self.attribs = attribs
         
         self.callstack = []
         self.current_instruction = None
