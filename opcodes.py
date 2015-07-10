@@ -1,13 +1,16 @@
 from lltypes import get_type
 import struct
+from utils import find_closing
+import debug
 import re
-
 
 RESULT_OPCODES = {}
 OPCODES = {}
 
-STORE_PATTERN = re.compile("(?P<src_type>\w*)\s+(?P<src>[%@]?\w+)\s*,\s*(?P<dest_type>\w*\*?)\s+(?P<dest>[%@]?\w+)\s*(,\s*align\s+(?P<alignment>\d+))?$")
-INTEGER_VALUE = re.compile("\d+")
+STORE_PATTERN = re.compile(r"(?P<src_type>\w*)\s+(?P<src>[%@]?\w+)\s*,\s*(?P<dest_type>\w*\*?)\s+(?P<dest>[%@]?\w+)\s*(,\s*align\s+(?P<alignment>\d+))?$")
+INTEGER_VALUE = re.compile(r"\d+")
+ALLOCA_PATTERN = re.compile(r"(?P<type>[\w\d]+),\s*align\s+(?P<alignment>\d)")
+CALL_PATTERN = re.compile(r"(?P<type>[\w\d]+)\s+(?P<params_type>\(.*\)\*\s+)?(?P<name>@\w+)\((?P<params>.*)\)")
 
 class InvalidOpcodeArguments(Exception):
     def __init__(self, opcode_name, params, result_var=None):
@@ -36,31 +39,27 @@ def opcode(func):
 
 
 @result_opcode
+@debug.log
 def alloca(program, result_var, params):
     # TODO: Do something with align?
-    ALLOCA_RE = r"(?P<type>[\w\d]+),\s*align\s+(?P<alignment>\d)"
+    result = ALLOCA_PATTERN.match(params)
 
-    result = re.match(line)
     if not result:
         raise InvalidOpcodeArguments("alloca", params, result_var)
 
     values = result.groupdict()
 
-    scope = program.current_inst[2]
-
-    if dest in scope:
+    if result_var in program.state.scope:
         # TODO: Maybe this should throw an exception?
         pass
 
-    scope[dest] = get_type(operands[0]).create()
+    program.state.scope[result_var] = get_type(values['type']).create()
     program.inc_inst()
-    print "ALLOCA dest: '%s', operands: '%s'" % (result_var, str(params))
-
 
 @opcode
+@debug.log
 def store(program, params):
     # Implemented by Amit
-
     result = store_pattern.match()
 
     if result is None:
@@ -84,14 +83,23 @@ def store(program, params):
 
     print("STORE", params)
 
+    program.inc_inst()
 
 @result_opcode
+@debug.log
 def load(program, result_var, params):
     # Implemented by Amit
-    print("LOAD dest: '%s', operands: '%s'" % (result_var, str(params)))
-
+    program.inc_inst()
 
 @result_opcode
+@debug.log
 def call(program, result_var, params):
-    # Implemented by Gitlitz0
-    print("%s = CALL %s" % (result_var, params))
+    # call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([13 x i8]* @.str, i32 0, i32 0))
+    result = CALL_PATTERN.match(params)
+
+    if not result:
+        raise InvalidOpcodeArguments("call", params, result_var)
+
+    values = result.groupdict()
+
+    program.inc_inst()

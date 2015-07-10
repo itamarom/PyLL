@@ -1,6 +1,7 @@
 import re
 import argparse
 from program import Program
+import debug
 
 PUBLIC_VAR_DEFINITION_PATTERN = r"@(?P<name>[\w\.]+)\s*=\s*(?P<props>[\w ]*)\[(?P<size>\d+)\s*x\s*(?P<unit>\w+)\]\s*(?P<value>.+),\s*align\s*(?P<alignment>\d+)$"
 FUNC_DEFINITION_PATTERN = r"define\s+(?P<return_type>\w+)\s+@(?P<name>\w+)\((?P<params>[\w\d\s%,]+)?\)\s*(?P<attribs>#\d+)?\s*\{$"
@@ -16,11 +17,13 @@ attribs = {}
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('src', type=argparse.FileType('r'))
+    parser.add_argument('--debug', action='store_true')
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
+    debug.IS_DEBUG = args.debug
     src = args.src
 
     public_var_definition = re.compile(PUBLIC_VAR_DEFINITION_PATTERN)
@@ -52,6 +55,7 @@ def main():
                 values = result.groupdict()
                 funcs[values['name']] = {'return_type': values['return_type'],
                                          'attribs': values['attribs'],
+                                         'params': parse_func_params(values['params']),
                                          'content': parse_func(src)}
             else:
                 raise Exception('FUCK')
@@ -72,20 +76,42 @@ def main():
             print('ignoring: ' + line)
 
         line = src.readline()
-
-    #print('unkonwn:')
-    #print(unknown)
-    #print('globs:')
-    #print(globs)
-    #print('funcs')
-    #print(funcs)
-    #print('attribs:')
-    #print(attribs)
+        
+    if debug.IS_DEBUG:
+        print('unkonwn:')
+        print(unknown)
+        print('globs:')
+        print(globs)
+        print('funcs')
+        print(funcs)
+        print('attribs:')
+        print(attribs)
 
     prog = Program(unknown, globs, funcs, attribs)
     print "=============== RUNNING ==============="
     prog.run()
 
+    
+def parse_func_params(params):
+    SPECIAL_PARAMS = ['...']
+    
+    if params is None: return None
+
+    params = params.split(',')
+    result = []
+    
+    for param in params:
+        param = param.strip()
+        if param in SPECIAL_PARAMS:
+            result.append(param)
+        elif ' ' in param:
+            param_type, param_name = param.split()
+            result.append((param_type, param_name))
+        else:
+            result.append((param, None))
+
+    return result
+            
 
 def parse_func(src):
     content = []
