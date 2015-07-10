@@ -1,5 +1,6 @@
 from lltypes import get_type
 from utils import find_closing
+from program import ProgramState
 import debug
 import re
 
@@ -46,6 +47,7 @@ def alloca(program, result_var, params):
         pass
     
     allocated = get_type(values['type'])()
+    allocated = get_type(values['type'])()
     ptr = get_type(value['type'] + "*")()
     ptr.value = allocated
     
@@ -86,4 +88,12 @@ def call(program, result_var, params):
         
     values = result.groupdict()
     
-    program.inc_inst()
+    func_type = values['type']
+    func_params_type = values['params_type']
+    func_name = values['name']
+    func_params = values['params']
+    
+    if values['name']
+    
+    program.callstack.push(program.state)
+    program.state = ProgramState()
