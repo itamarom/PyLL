@@ -7,13 +7,13 @@ class OpcodeNotSupported(Exception):
         Exception.__init__(self, 'Opcode not supported: "%s"' % opcode_text)
         
 class ProgramState(object):
-    def __init__(self, func, offset, scope):
+    def __init__(self, func, op_index, scope):
         self.func = func
         self.op_index = op_index
         self.scope = scope
         
     def __iter__(self):
-        return iter([self.func, self.offset, self.scope])
+        return iter([self.func, self.op_index, self.scope])
         
     @property
     def op_text(self):
@@ -36,11 +36,10 @@ class Program(object):
             self._exec_inst()
             
     def inc_inst(self):
-        self.state.offset += 1
+        self.state.op_index += 1
 
     def _exec_inst(self):
         RESULT_OPCODE_PATTERN = r"%\w+\s*=\s*"
-        func, op_index, scope = self.current_inst
         op_text = self.state.op_text
         if not op_text:
             self.inc_inst()

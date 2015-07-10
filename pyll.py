@@ -1,6 +1,7 @@
 import re
 import argparse
 from program import Program
+import debug
 
 PUBLIC_VAR_DEFINITION_PATTERN = r"@(?P<name>[\w\.]+)\s*=\s*(?P<props>[\w ]*)\[(?P<size>\d+)\s*x\s*(?P<unit>\w+)\]\s*(?P<value>.+),\s*align\s*(?P<alignment>\d+)$"
 FUNC_DEFINITION_PATTERN = r"define\s+(?P<return_type>\w+)\s+@(?P<name>\w+)\((?P<params>[\w\d\s%,]+)?\)\s*(?P<attribs>#\d+)?\s*\{$"
@@ -16,11 +17,13 @@ attribs = {}
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('src', type=argparse.FileType('r'))
+    parser.add_argument('--debug', action='store_true')
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
+    debug.IS_DEBUG = args.debug
     src = args.src
 
     public_var_definition = re.compile(PUBLIC_VAR_DEFINITION_PATTERN)
