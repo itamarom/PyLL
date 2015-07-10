@@ -1,4 +1,5 @@
 from lltypes import get_type
+from utils import find_closing
 import debug
 import re
 
@@ -7,6 +8,7 @@ OPCODES = {}
 
 STORE_PATTERN = re.compile(r"(?P<src_type>\w*)\s+(?P<src>[%@]?\w+)\s*,\s*(?P<dest_type>\w*\*?)\s+(?P<dest>[%@]?\w+)\s*(,\s*align\s+(?P<alignment>\d+))?$")
 ALLOCA_PATTERN = re.compile(r"(?P<type>[\w\d]+),\s*align\s+(?P<alignment>\d)")
+CALL_PATTERN = re.compile(r"(?P<type>[\w\d]+)\s+(?P<params_type>\(.*\)\*\s+)?(?P<name>@\w+)\((?P<params>.*)\)")
 
 class InvalidOpcodeArguments(Exception):
     def __init__(self, opcode_name, params, result_var=None):
@@ -50,16 +52,16 @@ def alloca(program, result_var, params):
 @debug.log
 def store(program, params):
     # Implemented by Amit
-    result = STORE_PATTERN.match()
-
-    if result is None:
-        raise InvalidOpcodeArguments('store', params)
-
-    values = result.groupdict()
-
-    src = values['src']
-    if src.startswith('%') or src.startswith('@'):  # TODO: use var pattern
-        pass
+    #result = STORE_PATTERN.match()
+    #
+    #if result is None:
+    #    raise InvalidOpcodeArguments('store', params)
+    #
+    #values = result.groupdict()
+    #
+    #src = values['src']
+    #if src.startswith('%') or src.startswith('@'):  # TODO: use var pattern
+    #    pass
 
     program.inc_inst()
 
@@ -72,7 +74,12 @@ def load(program, result_var, params):
 @result_opcode
 @debug.log
 def call(program, result_var, params):
+    # call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([13 x i8]* @.str, i32 0, i32 0))
+    result = CALL_PATTERN.match(params)
     
-    
+    if not result:
+        raise InvalidOpcodeArguments("call", params, result_var)
+        
+    values = result.groupdict()
     
     program.inc_inst()
