@@ -1,8 +1,12 @@
-import re
 from lltypes import get_type
 import debug
+import re
+
 RESULT_OPCODES = {}
 OPCODES = {}
+
+STORE_PATTERN = re.compile(r"(?P<src_type>\w*)\s+(?P<src>[%@]?\w+)\s*,\s*(?P<dest_type>\w*\*?)\s+(?P<dest>[%@]?\w+)\s*(,\s*align\s+(?P<alignment>\d+))?$")
+ALLOCA_PATTERN = re.compile(r"(?P<type>[\w\d]+),\s*align\s+(?P<alignment>\d)")
 
 class InvalidOpcodeArguments(Exception):
     def __init__(self, opcode_name, params, result_var=None):
@@ -13,25 +17,26 @@ class InvalidOpcodeArguments(Exception):
         else:
             Exception.__init__(self, 'Invalid args passed to opcode "%s": %s, resultvar=%s' % \
                                      (opcode_name, str(params), result_var))
-    
+
 def result_opcode(func):
     RESULT_OPCODES[func.__name__] = func
     return func
+
 
 def opcode(func):
     OPCODES[func.__name__] = func
     return func
 
+
 @result_opcode
 @debug.log
 def alloca(program, result_var, params):
     # TODO: Do something with align?
-    ALLOCA_RE = r"(?P<type>[\w\d]+),\s*align\s+(?P<alignment>\d)"
+    result = ALLOCA_PATTERN.match(params)
     
-    result = re.match(ALLOCA_RE, params)
     if not result:
         raise InvalidOpcodeArguments("alloca", params, result_var)
-        
+
     values = result.groupdict()
     
     if result_var in program.state.scope:
@@ -40,11 +45,22 @@ def alloca(program, result_var, params):
     
     program.state.scope[result_var] = get_type(values['type']).create()
     program.inc_inst()
-    
+
 @opcode
 @debug.log
 def store(program, params):
     # Implemented by Amit
+    result = STORE_PATTERN.match()
+
+    if result is None:
+        raise InvalidOpcodeArguments('store', params)
+
+    values = result.groupdict()
+
+    src = values['src']
+    if src.startswith('%') or src.startswith('@'):  # TODO: use var pattern
+        pass
+
     program.inc_inst()
 
 @result_opcode
@@ -52,7 +68,7 @@ def store(program, params):
 def load(program, result_var, params):
     # Implemented by Amit
     program.inc_inst()
-
+    
 @result_opcode
 @debug.log
 def call(program, result_var, params):
