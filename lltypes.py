@@ -9,9 +9,10 @@ class LLType(object):
 class I32(LLType):
     name = 'i32'
     size = 4
-    def __init__(self):
-
-        LLType.__init__('i32', 4)
+        
+class I8(LLType):
+    name = 'i8'
+    size = 1
 
 def get_type(name):
     if name in TYPES:
