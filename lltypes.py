@@ -22,7 +22,10 @@ class LLPointer(LLVar):
 
 class LLInt(LLVar):
     def __init__(self, value):
-        value = int(value)
+        if value is None:
+            value = 0
+        else:
+            value = int(value)
         self.value = value
         
     def _validate_type(self, value):
