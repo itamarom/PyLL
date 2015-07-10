@@ -1,14 +1,13 @@
 from lltypes import get_type
+import struct
 import re
 
 
 RESULT_OPCODES = {}
 OPCODES = {}
 
-STORE_PATTERN = "(?P<src_type>\w*)\s+(?P<src>[%@]?\w+)\s*,\s*(?P<dest_type>\w*\*?)\s+(?P<dest>[%@]?\w+)\s*(,\s*align\s+(?P<alignment>\d+))?$"
-
-store_pattern = re.compile(STORE_PATTERN)
-
+STORE_PATTERN = re.compile("(?P<src_type>\w*)\s+(?P<src>[%@]?\w+)\s*,\s*(?P<dest_type>\w*\*?)\s+(?P<dest>[%@]?\w+)\s*(,\s*align\s+(?P<alignment>\d+))?$")
+INTEGER_VALUE = re.compile("\d+")
 
 class InvalidOpcodeArguments(Exception):
     def __init__(self, opcode_name, params, result_var=None):
@@ -19,6 +18,11 @@ class InvalidOpcodeArguments(Exception):
         else:
             Exception.__init__(self, 'Invalid args passed to opcode "%s": %s, resultvar=%s' % \
                                      (opcode_name, str(params), result_var))
+
+class InvalidLLValue(Exception):
+    def __init__(self, value):
+        self.value = value
+        Exception.__init__(self, 'Could not parse value: {}'.format(value)
 
 
 def result_opcode(func):
@@ -64,9 +68,19 @@ def store(program, params):
 
     values = result.groupdict()
 
+    dest_var = program.state.scope[values]
+
     src = values['src']
-    if src.startswith('%') or src.startswith('@'):  # TODO: use var pattern
-        pass
+    try:
+        src_var = program.get_var(src)  # TODO: validate type
+    except InvalidVarName:
+        src_var = get_type(values['src_type']).initialize(src)
+
+    if len(src) == len(dest):
+
+
+
+
 
     print("STORE", params)
 
