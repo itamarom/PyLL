@@ -55,7 +55,7 @@ def main():
                 values = result.groupdict()
                 funcs[values['name']] = {'return_type': values['return_type'],
                                          'attribs': values['attribs'],
-                                         'params': values['params'],
+                                         'params': parse_func_params(values['params']),
                                          'content': parse_func(src)}
             else:
                 raise Exception('FUCK')
@@ -91,6 +91,27 @@ def main():
     print "=============== RUNNING ==============="
     prog.run()
 
+    
+def parse_func_params(params):
+    SPECIAL_PARAMS = ['...']
+    
+    if params is None: return None
+
+    params = params.split(',')
+    result = []
+    
+    for param in params:
+        param = param.strip()
+        if param in SPECIAL_PARAMS:
+            result.append(param)
+        elif ' ' in param:
+            param_type, param_name = param.split()
+            result.append((param_type, param_name))
+        else:
+            result.append((param, None))
+
+    return result
+            
 
 def parse_func(src):
     content = []

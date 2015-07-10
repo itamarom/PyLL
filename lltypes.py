@@ -6,14 +6,13 @@ class LLType(object):
     def create(cls):
         return bytearray(cls.size)
         
-        
 class I32(LLType):
     name = 'i32'
     size = 4
-
     def __init__(self):
+
         LLType.__init__('i32', 4)
-        
+
 def get_type(name):
     if name in TYPES:
         return TYPES[name]
