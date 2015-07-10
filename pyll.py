@@ -55,6 +55,7 @@ def main():
                 values = result.groupdict()
                 funcs[values['name']] = {'return_type': values['return_type'],
                                          'attribs': values['attribs'],
+                                         'params': values['params'],
                                          'content': parse_func(src)}
             else:
                 raise Exception('FUCK')
@@ -75,15 +76,16 @@ def main():
             print('ignoring: ' + line)
 
         line = src.readline()
-
-    #print('unkonwn:')
-    #print(unknown)
-    #print('globs:')
-    #print(globs)
-    #print('funcs')
-    #print(funcs)
-    #print('attribs:')
-    #print(attribs)
+        
+    if debug.IS_DEBUG:
+        print('unkonwn:')
+        print(unknown)
+        print('globs:')
+        print(globs)
+        print('funcs')
+        print(funcs)
+        print('attribs:')
+        print(attribs)
 
     prog = Program(unknown, globs, funcs, attribs)
     print "=============== RUNNING ==============="

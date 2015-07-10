@@ -72,5 +72,7 @@ def load(program, result_var, params):
 @result_opcode
 @debug.log
 def call(program, result_var, params):
-    # Implemented by Gitlitz0
+    
+    
+    
     program.inc_inst()
