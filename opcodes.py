@@ -1,7 +1,7 @@
 from lltypes import get_type
 import struct
 from utils import find_closing
-from program import ProgramState
+from program_state import ProgramState
 import debug
 import re
 
@@ -26,8 +26,12 @@ class InvalidOpcodeArguments(Exception):
 class InvalidLLValue(Exception):
     def __init__(self, value):
         self.value = value
-        Exception.__init__(self, 'Could not parse value: {}'.format(value)
-
+        Exception.__init__(self, 'Could not parse value: {}'.format(value))
+        
+class FuncNotFoundError(Exception):
+    def __init__(self, func_name):
+        self.func_name = func_name
+        Exception.__init__(self, 'Could not find function named "%s"' % func_name)
 
 def result_opcode(func):
     RESULT_OPCODES[func.__name__] = func
@@ -54,8 +58,8 @@ def alloca(program, result_var, params):
         # TODO: Maybe this should throw an exception?
         pass
 
-    allocated = get_type(values['type'])()
-    ptr = get_type(value['type'] + "*")()
+    allocated = get_type(values['type'])(None)
+    ptr = get_type(values['type'] + "*")(None)
     ptr.value = allocated
 
     program.state.scope[result_var] = ptr
@@ -65,28 +69,23 @@ def alloca(program, result_var, params):
 @debug.log
 def store(program, params):
     # Implemented by Amit
-    result = store_pattern.match()
-
-    if result is None:
-        raise InvalidOpcodeArguments('store', params)
-
-    values = result.groupdict()
-
-    dest_var = program.state.scope[values]
-
-    src = values['src']
-    try:
-        src_var = program.get_var(src)  # TODO: validate type
-    except InvalidVarName:
-        src_var = get_type(values['src_type']).initialize(src)
-
-    if len(src) == len(dest):
-
-
-
-
-
-    print("STORE", params)
+    #result = store_pattern.match()
+    #
+    #if result is None:
+    #    raise InvalidOpcodeArguments('store', params)
+    #
+    #values = result.groupdict()
+    #
+    #dest_var = program.state.scope[values]
+    #
+    #src = values['src']
+    #try:
+    #    src_var = program.get_var(src)  # TODO: validate type
+    #except InvalidVarName:
+    #    src_var = get_type(values['src_type']).initialize(src)
+    #
+    #if len(src) == len(dest):
+    #print("STORE", params)
 
     program.inc_inst()
 
@@ -112,7 +111,9 @@ def call(program, result_var, params):
     func_name = values['name']
     func_params = values['params']
     
-    if values['name']
+    program.callstack.append(program.state)
     
-    program.callstack.push(program.state)
-    program.state = ProgramState()
+    if values['name'] in program.funcs:
+        program.state = ProgramState(program.funcs[values['name']])
+    else:
+        raise FuncNotFoundError(values['name'])

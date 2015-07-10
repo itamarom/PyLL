@@ -1,23 +1,12 @@
 import re
 from opcodes import RESULT_OPCODES, OPCODES
+from program_state import ProgramState
 
 class OpcodeNotSupported(Exception):
     def __init__(self, opcode_text):
         self.opcode_text = opcode_text
         Exception.__init__(self, 'Opcode not supported: "%s"' % opcode_text)
-        
-class ProgramState(object):
-    def __init__(self, func, op_index, scope):
-        self.func = func
-        self.op_index = op_index
-        self.scope = scope
-        
-    def __iter__(self):
-        return iter([self.func, self.op_index, self.scope])
-        
-    @property
-    def op_text(self):
-        return self.func['content'][self.op_index].strip()
+
 
 class Program(object):
     def __init__(self, unknown, globs, funcs, attribs):
@@ -30,7 +19,7 @@ class Program(object):
         self.state = None
 
     def run(self, entry_point='main', args=None):
-        self.state = ProgramState(self.funcs[entry_point], 0, {})
+        self.state = ProgramState(self.funcs[entry_point])
         
         while True:
             self._exec_inst()
