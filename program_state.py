@@ -1,15 +1,13 @@
         
 class ProgramState(object):
-    def __init__(self, func, op_index=0, scope=None):
+    def __init__(self, func, op_index=0, scope=None, result_var=None):
         if scope is None:
             scope = {}
         self.func = func
         self.op_index = op_index
         self.scope = scope
-        
-    def __iter__(self):
-        return iter([self.func, self.op_index, self.scope])
-        
+        self.result_var = result_var
+
     @property
     def op_text(self):
         return self.func['content'][self.op_index].strip()

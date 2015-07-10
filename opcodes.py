@@ -114,6 +114,17 @@ def call(program, result_var, params):
     program.callstack.append(program.state)
     
     if values['name'] in program.funcs:
-        program.state = ProgramState(program.funcs[values['name']])
+        program.state = ProgramState(program.funcs[values['name']], result_var=result_var)
     else:
         raise FuncNotFoundError(values['name'])
+        
+@opcode
+@debug.log
+def ret(program, params):
+    # ret i32 0
+    return_type, return_value = params.split()
+    return_obj = get_type(return_type)(return_value)
+    
+    # TODO: Should we access value.value here?
+    program.state.result_var.value = return_obj
+    program.state = program.callstack.pop()
