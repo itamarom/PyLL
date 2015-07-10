@@ -1,4 +1,5 @@
 import re
+from opcodes import RESULT_OPCODES, OPCODES
 
 class OpcodeNotSupported(Exception):
     def __init__(self, opcode_text):
@@ -33,39 +34,20 @@ class Program(object):
         if re.findall(RESULT_OPCODE_PATTERN, op_text) and \
             op_text.find(re.findall(RESULT_OPCODE_PATTERN, op_text)[0]) == 0:
             
-            dest, opcode = op_text.split('=', 1)
+            dest, opcode = map(str.strip, op_text.split('=', 1))
+            opcode_name, params = opcode.split(' ', 1)
             
-            if opcode.startswith('alloca'):
-                Opcodes.alloca(self, dest, opcode.split(' ', 1)[1])
-            if opcode.startswith('call'):
-                Opcodes.call(self, dest, opcode.split(' ', 1)[1])
+            if opcode_name in RESULT_OPCODES:
+                RESULT_OPCODES[opcode_name](self, dest, params)
             else:
-                raise OpcodeNotSupported(op_text)
+                raise OpcodeNotSupported(opcode)
                 
         else:
-            if op_text.startswith('store'):
-                Opcodes.call(pasten)
+            opcode_name, params = op_text.split(' ', 1)
+            if opcode_name in OPCODES:
+                OPCODES[opcode_name](self, params)
             else:
-                raise OpcodeNotSupported(op_text)
+                raise OpcodeNotSupported(opcode)
 
         self.current_inst = func, op_index+1, scope
         
-class Opcodes(object):
-
-    @staticmethod
-    def alloca(program, dest, operands):
-        raise NotImplementedError()
-        # %1 = alloca i32, align 4
-        operands = operands.split(',')
-        program.current_inst[2][dest] = '\x00' * TYPES[operands[0]].size
-
-    @staticmethod
-    def store(program, *args, **kwargs):
-        # Implemented by Amit
-        pass
-
-    @staticmethod
-    def call(program, *args, **kwargs):
-        # Implemented by Gitlitz
-        pass
-

@@ -48,8 +48,6 @@ def main():
         elif line.startswith('define'):
             # functions
             result = func_definition.match(line)
-            print line
-            print func_definition
             if result is not None:
                 values = result.groupdict()
                 funcs[values['name']] = {'return_type': values['return_type'],
@@ -75,25 +73,26 @@ def main():
 
         line = src.readline()
 
-    print('unkonwn:')
-    print(unknown)
-    print('globs:')
-    print(globs)
-    print('funcs')
-    print(funcs)
-    print('attribs:')
-    print(attribs)
+    #print('unkonwn:')
+    #print(unknown)
+    #print('globs:')
+    #print(globs)
+    #print('funcs')
+    #print(funcs)
+    #print('attribs:')
+    #print(attribs)
 
     prog = Program(unknown, globs, funcs, attribs)
+    print "=============== RUNNING ==============="
     prog.run()
 
 
 def parse_func(src):
-    content = str()
+    content = []
 
     line = src.readline()
     while line and not line.strip().startswith('}'):
-        content += line
+        content.append(line)
         line = src.readline()
 
     return content
@@ -113,7 +112,6 @@ def parse_llvm_str(text):
         nums = re.findall(p, text)
 
     if len(text) >= 4 and text[0] == '\\' and text[1] != '\\':
-        print 'a'
         text = chr(int(text[1:3], 16)) + text[3:]
 
     return text
