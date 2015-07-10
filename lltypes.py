@@ -3,12 +3,10 @@ class LLVar(object):
 
     @property
     def value(self):
-        print "a"
         return self._value
         
     @value.setter
     def value(self, new_value):
-        print "b"
         self._validate_type(new_value)
         self._value = new_value
      

@@ -53,7 +53,11 @@ def alloca(program, result_var, params):
         # TODO: Maybe this should throw an exception?
         pass
 
-    program.state.scope[result_var] = get_type(values['type']).create()
+    allocated = get_type(values['type'])()
+    ptr = get_type(value['type'] + "*")()
+    ptr.value = allocated
+
+    program.state.scope[result_var] = ptr
     program.inc_inst()
 
 @opcode
