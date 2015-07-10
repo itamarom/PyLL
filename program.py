@@ -5,6 +5,19 @@ class OpcodeNotSupported(Exception):
     def __init__(self, opcode_text):
         self.opcode_text = opcode_text
         Exception.__init__(self, 'Opcode not supported: "%s"' % opcode_text)
+        
+class ProgramState(object):
+    def __init__(self, func, offset, scope):
+        self.func = func
+        self.op_index = op_index
+        self.scope = scope
+        
+    def __iter__(self):
+        return iter([self.func, self.offset, self.scope])
+        
+    @property
+    def op_text(self):
+        return self.func['content'][self.op_index].strip()
 
 class Program(object):
     def __init__(self, unknown, globs, funcs, attribs):
@@ -14,21 +27,23 @@ class Program(object):
         self.attribs = attribs
 
         self.callstack = []
-        self.current_inst = None
+        self.state = None
 
     def run(self, entry_point='main', args=None):
-        self.current_inst = (self.funcs[entry_point], 0, {})
+        self.state = ProgramState(self.funcs[entry_point], 0, {})
         
         while True:
             self._exec_inst()
+            
+    def inc_inst(self):
+        self.state.offset += 1
 
     def _exec_inst(self):
         RESULT_OPCODE_PATTERN = r"%\w+\s*=\s*"
         func, op_index, scope = self.current_inst
-        op_text = func['content'][op_index].strip()
-        
+        op_text = self.state.op_text
         if not op_text:
-            self.current_inst = func, op_index+1, scope
+            self.inc_inst()
             return
         
         if re.findall(RESULT_OPCODE_PATTERN, op_text) and \
@@ -49,5 +64,3 @@ class Program(object):
             else:
                 raise OpcodeNotSupported(opcode)
 
-        self.current_inst = func, op_index+1, scope
-        
