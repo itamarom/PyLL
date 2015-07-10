@@ -8,7 +8,7 @@ import re
 RESULT_OPCODES = {}
 OPCODES = {}
 
-STORE_PATTERN = re.compile(r"(?P<src_type>\w*)\s+(?P<src>[%@]?\w+)\s*,\s*(?P<dest_type>\w*\*?)\s+(?P<dest>[%@]?\w+)\s*(,\s*align\s+(?P<alignment>\d+))?$")
+STORE_PATTERN = re.compile(r"(?P<src_type>\w*)\s+(?P<src>[%@]?\w+)\s*,\s*(?P<dest_type>\w*)\*\s+(?P<dest>[%@]?\w+)\s*(?:,\s*align\s+(?P<alignment>\d+))?$")
 INTEGER_VALUE = re.compile(r"\d+")
 ALLOCA_PATTERN = re.compile(r"(?P<type>[\w\d]+),\s*align\s+(?P<alignment>\d)")
 CALL_PATTERN = re.compile(r"(?P<type>[\w\d]+)\s+(?P<params_type>\(.*\)\*\s+)?(?P<name>@\w+)\((?P<params>.*)\)")
@@ -72,19 +72,20 @@ def store(program, params):
 
     values = result.groupdict()
 
-    dest_var = program.state.scope[values]
-
     src = values['src']
+    src_type = get_type(values['src_type'])
     try:
-        src_var = program.get_var(src)  # TODO: validate type
+        src_var = program.get_var(src)  # TODO: validate type?
     except InvalidVarName:
-        src_var = get_type(values['src_type']).initialize(src)
+        src_var = src_type(src)
 
-    if len(src) == len(dest):
+    dest_type = get_type(values['dest_type'])
+    dest_var = program.get_var(values['dest']).value
 
-
-
-
+    if dest_type is src_type:
+        dest_var.value = src_var.value
+    elif issubclass(dest_type, LLInt) and issubclass(src_type, LLInt):
+        dest_var.value = src_var.value  # TODO: deal with different sizes
 
     print("STORE", params)
 
@@ -111,8 +112,8 @@ def call(program, result_var, params):
     func_params_type = values['params_type']
     func_name = values['name']
     func_params = values['params']
-    
+
     if values['name']
-    
+
     program.callstack.push(program.state)
     program.state = ProgramState()
